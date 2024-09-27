@@ -2,32 +2,33 @@
 
 void		*ft_memcpy(void *s1, const void *s2, size_t n)
 {
-	size_t	i;
-	char	*dest;
-	char	*src;
-
-	dest = (char*)s1;
-	src = (char*)s2;
-	i = 0;
+	size_t	i = 0;
+	char	*dest = (char *)s1;
+	char	*src = (char *)s2;
 	while (i < n)
-	{
+    {
 		dest[i] = src[i];
-		i++;
-	}
+        i++;
+    }
 	return (dest);
 }
 
-void		*ft_realloc(void *ptr, size_t size)
+void    *ft_realloc(void *ptr, size_t old_size, size_t new_size)
 {
-	void	*new_ptr;
-
-	if (ptr == NULL)
-		return (malloc(size));
-	if (!size)
-		return (ptr);
-	new_ptr = malloc(size);
-	ft_memcpy(new_ptr, ptr, size);
-	return (new_ptr);
+    void    *new_ptr;
+    if (new_size == 0)
+    {
+        free(ptr);
+        return (NULL);
+    }
+    if (ptr == NULL)
+        return (malloc(new_size));
+    new_ptr = malloc(new_size);
+    if (!new_ptr)
+        return (NULL);
+    ft_memcpy(new_ptr, ptr, old_size < new_size ? old_size : new_size);
+    free(ptr);
+    return (new_ptr);
 }
 
 char *get_next_line(int fd)
@@ -37,6 +38,7 @@ char *get_next_line(int fd)
 	static int	pos = 0;
 	char *line = NULL;
 	int len = 0;
+    int old_size = 0;
 	if (fd < 0 || BUFFER_SIZE < 0)
 		return (NULL);
 	while (1)
@@ -52,7 +54,7 @@ char *get_next_line(int fd)
 		{
 			if (buffer[pos] == '\n')
 			{
-				line = ft_realloc(line, len + 2);
+				line = ft_realloc(line, old_size, len + 2);
 				if (!line)
 					return (NULL);
 				line[len++] = '\n';
@@ -60,10 +62,11 @@ char *get_next_line(int fd)
 				pos++;
 				return (line);
 			}
-			line = ft_realloc(line, len + 2);
+			line = ft_realloc(line, old_size, len + 2);
 			if (!line)
 				return (NULL);
 			line[len++] = buffer[pos];
+            old_size = len + 1;
 		}
 	}
 	if (len > 0)
@@ -97,5 +100,4 @@ int main(void)
 	}
 	close(fd);
 	return (0);
-}
-
+}                 
